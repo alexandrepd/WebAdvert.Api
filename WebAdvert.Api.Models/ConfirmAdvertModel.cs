@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WebAdvert.Api.Models
+﻿namespace WebAdvert.Api.Models
 {
-    public  class ConfirmAdvertModel
+    public class ConfirmAdvertModel
     {
-        public string Id { get; set; }
+        public string? Id { get; set; }
         public AdvertStatus Status { get; set; }
     }
 }
