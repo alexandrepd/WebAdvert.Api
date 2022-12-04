@@ -1,9 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>Package to Advert project</Title>
+    <PackageProjectUrl>https://github.com/alexandrepd/WebAdvert.Api</PackageProjectUrl>
+    <Description>This is my first package uploaded to nugut.org</Description>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <RepositoryType>git</RepositoryType>
+    <PackageId>Advert.Api.Models-alexandre_pd</PackageId>
   </PropertyGroup>
 
 </Project>
