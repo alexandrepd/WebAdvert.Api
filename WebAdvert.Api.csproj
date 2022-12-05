@@ -7,7 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Advert.Api.Models-alexandre_pd" Version="1.0.0" />
+    <Compile Remove="WebAdvert.Api.Models\**" />
+    <Content Remove="WebAdvert.Api.Models\**" />
+    <EmbeddedResource Remove="WebAdvert.Api.Models\**" />
+    <None Remove="WebAdvert.Api.Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.100.28" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
@@ -15,6 +21,10 @@
 
   <ItemGroup>
     <Folder Include="Images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="WebAdvert.Api.Models\WebAdvert.Api.Models.csproj" />
   </ItemGroup>
 
 </Project>

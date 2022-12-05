@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebAdvert.Api.Models;
 using WebAdvert.Api.Services;
+using WebAdvert.Api.Models;
 
 namespace WebAdvert.Api.Controllers
 {
@@ -31,7 +31,7 @@ namespace WebAdvert.Api.Controllers
             {
                 _recordId = await _advertStorageService.Add(model);
             }
-            catch (KeyNotFoundException exception)
+            catch (KeyNotFoundException)
             {
                 return new NotFoundResult();
             }
