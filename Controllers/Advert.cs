@@ -65,5 +65,30 @@ namespace WebAdvert.Api.Controllers
 
             return new OkResult();
         }
+
+
+        [HttpPost]
+        [Route("healthCheck")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> healthCheck()
+        {
+            
+            bool isAlive;
+            try
+            {
+                isAlive = await _advertStorageService.CheckAdvertTableAsync();
+            }
+            catch (KeyNotFoundException)
+            {
+                return new NotFoundResult();
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(500, exception.Message);
+            }
+
+            return StatusCode(201);
+        }
     }
 }

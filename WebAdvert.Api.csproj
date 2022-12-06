@@ -17,6 +17,8 @@
     <PackageReference Include="Advert.Api.Models-alexandre_pd" Version="1.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.100.28" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
@@ -25,3 +27,4 @@
   </ItemGroup>
 
 </Project>
+

@@ -2,6 +2,7 @@
 using WebAdvert.Api.Models;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
+using Amazon;
 
 namespace WebAdvert.Api.Services
 {
@@ -9,6 +10,7 @@ namespace WebAdvert.Api.Services
     {
 
         private readonly IMapper _mapper;
+        private readonly RegionEndpoint _region = Amazon.RegionEndpoint.USEast1;
 
         public DynamoDBAdvertStorage(IMapper mapper)
         {
@@ -18,12 +20,12 @@ namespace WebAdvert.Api.Services
         {
             AdvertDBModel _dbModel = _mapper.Map<AdvertDBModel>(model);
 
-            _dbModel.Id = new Guid().ToString();
+            _dbModel.Id =  Guid.NewGuid().ToString();
             _dbModel.CreationDateTime = DateTime.UtcNow;
             _dbModel.Status = AdvertStatus.Pending;
 
 
-            using (var client = new AmazonDynamoDBClient())
+            using (var client = new AmazonDynamoDBClient(region: _region))
             {
                 using (var context = new DynamoDBContext(client))
                 {
@@ -33,9 +35,18 @@ namespace WebAdvert.Api.Services
             return _dbModel.Id;
         }
 
+        public async Task<bool> CheckAdvertTableAsync()
+        {
+            using (var client = new AmazonDynamoDBClient(region: _region))
+            {
+                var tableData = await client.DescribeTableAsync("Adverts");
+                return string.Compare(tableData.Table.TableStatus, "active", true) == 0;
+            }
+        }
+
         public async Task<bool> Confirm(ConfirmAdvertModel model)
         {
-            using (var client = new AmazonDynamoDBClient())
+            using (var client = new AmazonDynamoDBClient(region: _region))
             {
                 using (var context = new DynamoDBContext(client))
                 {

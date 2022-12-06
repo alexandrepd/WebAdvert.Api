@@ -6,5 +6,7 @@ namespace WebAdvert.Api.Services
     {
         Task<string> Add(AdvertModel model);
         Task<bool> Confirm(ConfirmAdvertModel model);
+
+        Task<bool> CheckAdvertTableAsync();
     }
 }
