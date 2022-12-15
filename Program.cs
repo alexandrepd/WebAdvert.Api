@@ -24,19 +24,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//builder.Services.AddHealthChecks().AddCheck<StorageHealthChecks>("Storage");
+builder.Services.AddHealthChecks().AddCheck<StorageHealthChecks>("Storage");
 
 var app = builder.Build();
 
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
-//app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/healthz");
 
 app.UseAuthorization();
 

@@ -3,6 +3,7 @@ using WebAdvert.Api.Models;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon;
+using Amazon.Runtime;
 
 namespace WebAdvert.Api.Services
 {
@@ -11,21 +12,25 @@ namespace WebAdvert.Api.Services
 
         private readonly IMapper _mapper;
         private readonly RegionEndpoint _region = Amazon.RegionEndpoint.USEast1;
+        private readonly IConfiguration Configuration;
+        private readonly BasicAWSCredentials credentials;
 
-        public DynamoDBAdvertStorage(IMapper mapper)
+        public DynamoDBAdvertStorage(IMapper mapper, IConfiguration configuration)
         {
             _mapper = mapper;
+            Configuration = configuration;
+            credentials = new BasicAWSCredentials(Configuration["AWS:AwsAccessKeyId"], Configuration["AWS:AwsSecretAccessKey"]);
         }
         public async Task<string> Add(AdvertModel model)
         {
             AdvertDBModel _dbModel = _mapper.Map<AdvertDBModel>(model);
 
-            _dbModel.Id =  Guid.NewGuid().ToString();
+            _dbModel.Id = Guid.NewGuid().ToString();
             _dbModel.CreationDateTime = DateTime.UtcNow;
             _dbModel.Status = AdvertStatus.Pending;
 
 
-            using (var client = new AmazonDynamoDBClient(region: _region))
+            using (var client = new AmazonDynamoDBClient(credentials, region: _region))
             {
                 using (var context = new DynamoDBContext(client))
                 {
@@ -37,7 +42,7 @@ namespace WebAdvert.Api.Services
 
         public async Task<bool> CheckAdvertTableAsync()
         {
-            using (var client = new AmazonDynamoDBClient(region: _region))
+            using (var client = new AmazonDynamoDBClient(credentials, region: _region))
             {
                 var tableData = await client.DescribeTableAsync("Adverts");
                 return string.Compare(tableData.Table.TableStatus, "active", true) == 0;
@@ -46,7 +51,7 @@ namespace WebAdvert.Api.Services
 
         public async Task<bool> Confirm(ConfirmAdvertModel model)
         {
-            using (var client = new AmazonDynamoDBClient(region: _region))
+            using (var client = new AmazonDynamoDBClient(credentials, region: _region))
             {
                 using (var context = new DynamoDBContext(client))
                 {
@@ -66,7 +71,6 @@ namespace WebAdvert.Api.Services
                     }
                 }
             }
-
             return true;
         }
     }
