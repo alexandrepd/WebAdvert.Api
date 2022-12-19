@@ -4,6 +4,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon;
 using Amazon.Runtime;
+using System.Reflection;
 
 namespace WebAdvert.Api.Services
 {
@@ -72,6 +73,18 @@ namespace WebAdvert.Api.Services
                 }
             }
             return true;
+        }
+
+        public async Task<AdvertDBModel> GetById(string id)
+        {
+            using (var client = new AmazonDynamoDBClient(credentials, region: _region))
+            {
+                using (var context = new DynamoDBContext(client))
+                {
+                    return await context.LoadAsync<AdvertDBModel>(id);
+                }
+            }
+
         }
     }
 }
