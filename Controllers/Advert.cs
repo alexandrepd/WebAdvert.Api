@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebAdvert.Api.Services;
 using WebAdvert.Api.Models;
+using WebAdvert.Api.Models.Messages;
+using Amazon.SimpleNotificationService;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace WebAdvert.Api.Controllers
 {
@@ -9,9 +13,11 @@ namespace WebAdvert.Api.Controllers
     public class Advert : ControllerBase
     {
         private readonly IAdvertStorageService _advertStorageService;
-        public Advert(IAdvertStorageService advertStorageService)
+        private readonly IConfiguration _configuration;
+        public Advert(IAdvertStorageService advertStorageService, IConfiguration configuration)
         {
             _advertStorageService = advertStorageService;
+            _configuration = configuration;
         }
 
 
@@ -53,6 +59,7 @@ namespace WebAdvert.Api.Controllers
             try
             {
                 _confirm = await _advertStorageService.Confirm(model);
+                await RaiseAdvertConfirmedMessage(model);
             }
             catch (KeyNotFoundException)
             {
@@ -66,6 +73,23 @@ namespace WebAdvert.Api.Controllers
             return new OkResult();
         }
 
+        private async Task RaiseAdvertConfirmedMessage(ConfirmAdvertModel model)
+        {
+            string TopicArn = _configuration.GetValue<string>("TopicArn");
+            AdvertDBModel dbModel = await _advertStorageService.GetById(model.Id);
+            using (var client = new AmazonSimpleNotificationServiceClient())
+            {
+                var message = new AdvertConfirmedMessage
+                {
+                    Id = model.Id,
+                    Title = dbModel.Title
+                };
+
+                string messageJson = JsonConvert.SerializeObject(message);
+                await client.PublishAsync(TopicArn, messageJson);
+            }
+            
+        }
 
         [HttpPost]
         [Route("healthCheck")]
@@ -73,7 +97,7 @@ namespace WebAdvert.Api.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> healthCheck()
         {
-            
+
             bool isAlive;
             try
             {
