@@ -64,6 +64,8 @@ namespace WebAdvert.Api.Services
                     if (model.Status == AdvertStatus.Active)
                     {
                         _record.Status = AdvertStatus.Active;
+                        _record.FilePath = model.FilePath;
+
                         await context.SaveAsync<AdvertDBModel>(_record);
                     }
                     else
@@ -80,7 +82,9 @@ namespace WebAdvert.Api.Services
             {
                 using (var context = new DynamoDBContext(client))
                 {
-                    return await context.LoadAsync<AdvertModel>(id);
+                    AdvertDBModel model = await context.LoadAsync<AdvertDBModel>(id);
+                    AdvertModel advert = _mapper.Map<AdvertModel>(model);
+                    return advert;
                 }
             }
         }
