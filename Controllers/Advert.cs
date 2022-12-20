@@ -3,8 +3,9 @@ using WebAdvert.Api.Services;
 using WebAdvert.Api.Models;
 using WebAdvert.Api.Models.Messages;
 using Amazon.SimpleNotificationService;
-using System.Text.Json.Serialization;
 using Newtonsoft.Json;
+using Amazon.Runtime;
+using Amazon;
 
 namespace WebAdvert.Api.Controllers
 {
@@ -14,10 +15,15 @@ namespace WebAdvert.Api.Controllers
     {
         private readonly IAdvertStorageService _advertStorageService;
         private readonly IConfiguration _configuration;
+        private readonly RegionEndpoint _region = Amazon.RegionEndpoint.USEast1;
+        private readonly BasicAWSCredentials credentials;
+
         public Advert(IAdvertStorageService advertStorageService, IConfiguration configuration)
         {
             _advertStorageService = advertStorageService;
             _configuration = configuration;
+
+            credentials = new BasicAWSCredentials(_configuration["AWS:AwsAccessKeyId"], _configuration["AWS:AwsSecretAccessKey"]);
         }
 
 
@@ -77,7 +83,7 @@ namespace WebAdvert.Api.Controllers
         {
             string TopicArn = _configuration.GetValue<string>("TopicArn");
             AdvertDBModel dbModel = await _advertStorageService.GetById(model.Id);
-            using (var client = new AmazonSimpleNotificationServiceClient())
+            using (var client = new AmazonSimpleNotificationServiceClient(credentials: credentials, region: _region))
             {
                 var message = new AdvertConfirmedMessage
                 {
@@ -88,7 +94,7 @@ namespace WebAdvert.Api.Controllers
                 string messageJson = JsonConvert.SerializeObject(message);
                 await client.PublishAsync(TopicArn, messageJson);
             }
-            
+
         }
 
         [HttpPost]
