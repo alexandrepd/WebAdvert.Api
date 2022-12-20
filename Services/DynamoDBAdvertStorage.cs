@@ -22,7 +22,7 @@ namespace WebAdvert.Api.Services
             Configuration = configuration;
             credentials = new BasicAWSCredentials(Configuration["AWS:AwsAccessKeyId"], Configuration["AWS:AwsSecretAccessKey"]);
         }
-        public async Task<string> Add(AdvertModel model)
+        public async Task<string> AddAsync(AdvertModel model)
         {
             AdvertDBModel _dbModel = _mapper.Map<AdvertDBModel>(model);
 
@@ -41,7 +41,7 @@ namespace WebAdvert.Api.Services
             return _dbModel.Id;
         }
 
-        public async Task<bool> CheckAdvertTableAsync()
+        public async Task<bool> CheckHealthAsync()
         {
             using (var client = new AmazonDynamoDBClient(credentials, region: _region))
             {
@@ -50,7 +50,7 @@ namespace WebAdvert.Api.Services
             }
         }
 
-        public async Task<bool> Confirm(ConfirmAdvertModel model)
+        public async Task ConfirmAsync(ConfirmAdvertModel model)
         {
             using (var client = new AmazonDynamoDBClient(credentials, region: _region))
             {
@@ -72,19 +72,31 @@ namespace WebAdvert.Api.Services
                     }
                 }
             }
-            return true;
         }
 
-        public async Task<AdvertDBModel> GetById(string id)
+        public async Task<AdvertModel> GetByIdAsync(string id)
         {
             using (var client = new AmazonDynamoDBClient(credentials, region: _region))
             {
                 using (var context = new DynamoDBContext(client))
                 {
-                    return await context.LoadAsync<AdvertDBModel>(id);
+                    return await context.LoadAsync<AdvertModel>(id);
                 }
             }
+        }
 
+        public async Task<List<AdvertModel>> GetAllAsync()
+        {
+            using (var client = new AmazonDynamoDBClient(credentials, region: _region))
+            {
+                using (var context = new DynamoDBContext(client))
+                {
+                    var scanResult =
+                        await context.ScanAsync<AdvertDBModel>(new List<ScanCondition>()).GetNextSetAsync();
+
+                    return scanResult.Select(item => _mapper.Map<AdvertModel>(item)).ToList<AdvertModel>();
+                }
+            }
         }
     }
 }

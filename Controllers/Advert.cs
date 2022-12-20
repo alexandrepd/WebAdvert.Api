@@ -6,6 +6,7 @@ using Amazon.SimpleNotificationService;
 using Newtonsoft.Json;
 using Amazon.Runtime;
 using Amazon;
+using Microsoft.AspNetCore.Cors;
 
 namespace WebAdvert.Api.Controllers
 {
@@ -41,7 +42,7 @@ namespace WebAdvert.Api.Controllers
             string _recordId;
             try
             {
-                _recordId = await _advertStorageService.Add(model);
+                _recordId = await _advertStorageService.AddAsync(model);
             }
             catch (KeyNotFoundException)
             {
@@ -59,12 +60,12 @@ namespace WebAdvert.Api.Controllers
         [Route("Confirm")]
         [ProducesResponseType(404)]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> Confirm(ConfirmAdvertModel model)
+        public async Task<IActionResult> ConfirmAsync(ConfirmAdvertModel model)
         {
-            bool _confirm;
+
             try
             {
-                _confirm = await _advertStorageService.Confirm(model);
+                await _advertStorageService.ConfirmAsync(model);
                 await RaiseAdvertConfirmedMessage(model);
             }
             catch (KeyNotFoundException)
@@ -79,24 +80,6 @@ namespace WebAdvert.Api.Controllers
             return new OkResult();
         }
 
-        private async Task RaiseAdvertConfirmedMessage(ConfirmAdvertModel model)
-        {
-            string TopicArn = _configuration.GetValue<string>("TopicArn");
-            AdvertDBModel dbModel = await _advertStorageService.GetById(model.Id);
-            using (var client = new AmazonSimpleNotificationServiceClient(credentials: credentials, region: _region))
-            {
-                var message = new AdvertConfirmedMessage
-                {
-                    Id = model.Id,
-                    Title = dbModel.Title
-                };
-
-                string messageJson = JsonConvert.SerializeObject(message);
-                await client.PublishAsync(TopicArn, messageJson);
-            }
-
-        }
-
         [HttpPost]
         [Route("healthCheck")]
         [ProducesResponseType(400)]
@@ -107,7 +90,7 @@ namespace WebAdvert.Api.Controllers
             bool isAlive;
             try
             {
-                isAlive = await _advertStorageService.CheckAdvertTableAsync();
+                isAlive = await _advertStorageService.CheckHealthAsync();
             }
             catch (KeyNotFoundException)
             {
@@ -120,5 +103,55 @@ namespace WebAdvert.Api.Controllers
 
             return StatusCode(201);
         }
+
+        [HttpGet]
+        [Route("{id}")]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> Get(string id)
+        {
+            try
+            {
+                var advert = await _advertStorageService.GetByIdAsync(id);
+                return new JsonResult(advert);
+            }
+            catch (KeyNotFoundException)
+            {
+                return new NotFoundResult();
+            }
+            catch (Exception)
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
+        [HttpGet]
+        [Route("all")]
+        [ProducesResponseType(200)]
+        //[EnableCors("AllOrigin")]
+        public async Task<IActionResult> All()
+        {
+            return new JsonResult(await _advertStorageService.GetAllAsync());
+        }
+
+        private async Task RaiseAdvertConfirmedMessage(ConfirmAdvertModel model)
+        {
+            string TopicArn = _configuration.GetValue<string>("TopicArn");
+            AdvertModel dbModel = await _advertStorageService.GetByIdAsync(model.Id);
+            using (var client = new AmazonSimpleNotificationServiceClient(credentials: credentials, region: _region))
+            {
+                var message = new AdvertConfirmedMessage
+                {
+                    Id = model.Id,
+                    Title = dbModel.Title
+                };
+
+                string messageJson = JsonConvert.SerializeObject(message);
+                var _return = await client.PublishAsync(TopicArn, messageJson);
+                Console.WriteLine(_region.ToString());
+            }
+
+        }
+
     }
 }

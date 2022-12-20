@@ -12,7 +12,7 @@ namespace WebAdvert.Api.HealthChecks
         }
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
-            bool isStorageOk = await _advertStorageService.CheckAdvertTableAsync();
+            bool isStorageOk = await _advertStorageService.CheckHealthAsync();
             if (isStorageOk)
                 return HealthCheckResult.Healthy();
             else

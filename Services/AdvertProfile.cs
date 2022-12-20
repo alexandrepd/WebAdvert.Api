@@ -8,6 +8,7 @@ namespace WebAdvert.Api.Services
         public AdvertProfile()
         {
             CreateMap<AdvertModel, AdvertDBModel>();
+            CreateMap<AdvertDBModel, AdvertModel>();
         }
     }
 }

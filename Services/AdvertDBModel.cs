@@ -7,18 +7,20 @@ namespace WebAdvert.Api.Services
     public class AdvertDBModel
     {
         [DynamoDBHashKey]
-        public string? Id { get; set; }
+        public string Id { get; set; }
         [DynamoDBProperty]
-        public string? Title { get; set; }
+        public string Title { get; set; }
         [DynamoDBProperty]
-        public string? Description { get; set; }
+        public string Description { get; set; }
         [DynamoDBProperty]
         public double Price { get; set; }
         [DynamoDBProperty]
         public DateTime CreationDateTime { get; set; }
         [DynamoDBProperty]
         public AdvertStatus Status { get; set; }
-
-
+        [DynamoDBProperty]
+        public string FilePath { get; set; }
+        [DynamoDBProperty]
+        public string UserName { get; set; }
     }
 }
