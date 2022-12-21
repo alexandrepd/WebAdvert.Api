@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Amazon.Runtime;
 using Amazon;
 using Microsoft.AspNetCore.Cors;
+using Amazon.SimpleNotificationService.Model;
 
 namespace WebAdvert.Api.Controllers
 {
@@ -138,6 +139,7 @@ namespace WebAdvert.Api.Controllers
         {
             string TopicArn = _configuration.GetValue<string>("TopicArn");
             AdvertModel dbModel = await _advertStorageService.GetByIdAsync(model.Id);
+
             using (var client = new AmazonSimpleNotificationServiceClient(credentials: credentials, region: _region))
             {
                 var message = new AdvertConfirmedMessage
@@ -147,11 +149,8 @@ namespace WebAdvert.Api.Controllers
                 };
 
                 string messageJson = JsonConvert.SerializeObject(message);
-                var _return = await client.PublishAsync(TopicArn, messageJson);
-                Console.WriteLine(_region.ToString());
+                await client.PublishAsync(TopicArn, messageJson);
             }
-
         }
-
     }
 }
