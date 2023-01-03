@@ -9,5 +9,7 @@ namespace WebAdvert.Api.Services
         Task<AdvertModel> GetByIdAsync(string id);
         Task<bool> CheckHealthAsync();
         Task<List<AdvertModel>> GetAllAsync();
+        Task DeleteAsync(string id);
+        Task<AdvertModel> UpdateAsync(AdvertModel model);
     }
 }

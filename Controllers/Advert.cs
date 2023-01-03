@@ -8,6 +8,7 @@ using Amazon.Runtime;
 using Amazon;
 using Microsoft.AspNetCore.Cors;
 using Amazon.SimpleNotificationService.Model;
+using System;
 
 namespace WebAdvert.Api.Controllers
 {
@@ -61,7 +62,7 @@ namespace WebAdvert.Api.Controllers
         [Route("Confirm")]
         [ProducesResponseType(404)]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> ConfirmAsync(ConfirmAdvertModel model)
+        public async Task<IActionResult> Confirm(ConfirmAdvertModel model)
         {
 
             try
@@ -108,7 +109,7 @@ namespace WebAdvert.Api.Controllers
         [HttpGet]
         [Route("{id}")]
         [ProducesResponseType(404)]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(200, Type = typeof(AdvertModel))]
         public async Task<IActionResult> Get(string id)
         {
             try
@@ -151,6 +152,58 @@ namespace WebAdvert.Api.Controllers
                 string messageJson = JsonConvert.SerializeObject(message);
                 await client.PublishAsync(TopicArn, messageJson);
             }
+        }
+
+        [HttpPut]
+        [Route("Update")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(200, Type = typeof(AdvertModel))]
+        public async Task<IActionResult> Update(AdvertModel model)
+        {
+            if (model is null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            try
+            {
+                AdvertModel advert = await _advertStorageService.UpdateAsync(model);
+                return new JsonResult(advert);
+            }
+            catch (KeyNotFoundException)
+            {
+                return new NotFoundResult();
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(500, exception.Message);
+            }
+        }
+
+        [HttpDelete]
+        [Route("Delete")]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                var advert = await _advertStorageService.GetByIdAsync(id);
+                if (advert != null)
+                {
+                    await _advertStorageService.DeleteAsync(id);
+                }
+                else
+                {
+                    return StatusCode(404, $"User id: {id} not found");
+                }
+            }
+            catch (Exception exception)
+            {
+                return StatusCode(500, exception.Message);
+            }
+
+            return new OkResult();
         }
     }
 }
